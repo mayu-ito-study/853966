@@ -53,10 +53,12 @@ class TasksController extends Controller
             'status' => 'required|max:10',
         ]);
         
+        //dd(\Auth::id());
         // メッセージを作成
         $task = new Task;
         $task->content = $request->content;
         $task->status = $request->status;
+        $task->user_id = \Auth::id();
         $task->save();
 
         // トップページへリダイレクトさせる
