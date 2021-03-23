@@ -15,11 +15,37 @@ class TasksController extends Controller
      */
     public function index()
     {
-        //タスク一覧を取得
-        $tasks = Task::all();
+        // $data = [
+        //     'tasks' => [],
+        // ];
+        //$data = [];
+        //$user = null;
+        $tasks = [];
+        
+        if (\Auth::check()) { // 認証済みの場合
+            // 認証済みユーザを取得
+            $user = \Auth::user();
+            //dd($user);
+            // ユーザの投稿の一覧を作成日時の降順で取得
+            // （後のChapterで他ユーザの投稿も取得するように変更しますが、現時点ではこのユーザの投稿のみ取得します）
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+
+            // $data = [
+            //     'user' => $user,
+            //     //'tasks' => $tasks,
+            // ];
+        }
+        // $data['tasks'] = $tasks;
+        
+
+        // // Welcomeビューでそれらを表示
+        // return view('welcome', $data);
+        // //タスク一覧を取得
+        // $tasks = Task::all();
         
         //タスク一覧ビューでそれを表示
         return view('tasks.index', [
+            //'user' => $user,
             'tasks' => $tasks,
         ]);
     }
@@ -76,10 +102,17 @@ class TasksController extends Controller
         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
 
-        // メッセージ詳細ビューでそれを表示
-        return view('tasks.show', [
+        if (\Auth::id() === $task->user_id ) {
+            // 自分のもの
+            // メッセージ詳細ビューでそれを表示
+            return view('tasks.show', [
             'task' => $task,
         ]);
+            
+        } else {
+            // 自分以外のもの
+            return redirect('/');
+        }
     }
 
     /**
@@ -92,11 +125,18 @@ class TasksController extends Controller
     {
         // idの値でメッセージを検索して取得
         $task = Task::findOrFail($id);
-
-        // メッセージ編集ビューでそれを表示
-        return view('tasks.edit', [
-            'task' => $task,
-        ]);
+        
+        if (\Auth::id() === $task->user_id ) {
+            // 自分のもの
+            // メッセージ編集ビューでそれを表示
+            return view('tasks.edit', [
+                'task' => $task,
+            ]);
+            
+        } else {
+            // 自分以外のもの
+            return redirect('/');
+        }
     }
 
     /**
